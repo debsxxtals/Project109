@@ -1,6 +1,7 @@
 import LandingPage from '../views/LandingPage.vue'
 import HomePage from '@/views/HomePage.vue'
 import CultureInventory from "@/views/CultureInventory.vue";
+import ItemDetails from '@/views/ItemDetails.vue';
 
 import { createRouter, createWebHistory } from "vue-router";
 
@@ -20,6 +21,12 @@ const routes = [
     name: "CultureInventory",
     component: CultureInventory,
     path: "/inventory",
+  },
+
+  {
+    path: '/item/:id',
+    name: 'ItemDetails',
+    component: ItemDetails,
   },
 
 ];
