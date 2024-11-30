@@ -2,7 +2,7 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import vuetify from "./plugins/vuetify";
 import { loadFonts } from "./plugins/webfontloader";
-import router from "./router";  // Import your router configuration
+import router from "./router/router";  // Import your router configuration
 
 
 loadFonts();

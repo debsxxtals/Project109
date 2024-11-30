@@ -2,6 +2,7 @@
 import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
 
+
 // Vuetify
 import { createVuetify } from "vuetify";
 
@@ -9,7 +10,7 @@ import { createVuetify } from "vuetify";
 
 export default createVuetify({
   theme: {
-    defaultTheme: "dark", // Set the default theme to dark
+    defaultTheme: "light", // Set the default theme to dark
     themes: {
       dark: {
         dark: true, // Indicate that this is a dark theme
@@ -23,8 +24,10 @@ export default createVuetify({
       light: {
         dark: false,
         colors: {
-          primary: "#D7B43D", // Set primary color for light theme as well
-          secondary: "#FFCDD2", // Example secondary color
+          primary: "#FFC107 ", // Set the primary color for dark theme
+          secondary: "#41BBB6", // Example secondary color
+          background: "#08544f",
+          // Add more custom colors here if needed
         },
       },
     },
