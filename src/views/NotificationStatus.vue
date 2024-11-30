@@ -31,6 +31,7 @@
       <v-col> </v-col>
     </v-row>
     <v-list-item
+      v-if="item"
       base-color="surface-light"
       border="opacity-50 md"
       lines="two"
@@ -39,7 +40,6 @@
       rounded="lg"
       variant="flat"
     >
-      <!-- Username and Borrow Date -->
       <div class="d-flex justify-space-between align-center w-100">
         <a class="text-caption">John Doe</a>
         <span class="text-caption">Borrowed: 2024-11-20</span>
@@ -47,7 +47,6 @@
 
       <v-divider></v-divider>
 
-      <!-- Main Content with Buttons -->
       <div class="d-flex justify-space-between align-center w-100 mt-3">
         <div>
           <v-list-item-title class="text-start">
@@ -58,13 +57,12 @@
 
           <v-list-item-subtitle class="text-start">
             <div class="d-flex justify-space-between">
-              <span>Quantity: {{ quantity }}</span>
-              <span>Size: {{ size }}</span>
+              <span>Quantity: {{ item.quantity }}</span>
+              <span>Size: {{ item.size }}</span>
             </div>
           </v-list-item-subtitle>
         </div>
 
-        <!-- Buttons -->
         <div class="d-flex">
           <v-btn
             :key="`subscribe-${isSubscriber}`"
@@ -101,4 +99,11 @@
 import { shallowRef } from "vue";
 
 const isSubscriber = shallowRef(false);
+
+// Dummy data for testing
+const item = shallowRef({
+  name: "Barong Tagalog",
+  quantity: 5,
+  size: "Medium",
+});
 </script>

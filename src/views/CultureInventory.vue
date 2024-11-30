@@ -34,6 +34,7 @@
             cols="12"
             sm="6"
             md="4"
+            lg="3"
           >
             <v-card class="ma-3" @click="viewDetails(item.id)" hover>
               <v-img
@@ -96,11 +97,15 @@
 
 <script>
 import { supabase } from "../supabase";
+import { useRouter } from "vue-router";
 import { ref, onMounted } from "vue";
+import { nextTick } from "vue";
+
 
 export default {
   setup() {
     const inventory = ref([]);
+    const router = useRouter();
 
     // Fetch inventory data from Supabase
     const getDatas = async () => {
@@ -119,7 +124,7 @@ export default {
     const viewDetails = (itemId) => {
       console.log("View details for:", itemId);
       // Replace with Vue Router navigation if needed:
-      this.$router.push({ name: "ItemDetails", params: { id: itemId } });
+      router.push({ name: "ItemDetails", params: { id: itemId } });
     };
 
     // Add to favorites
@@ -127,7 +132,8 @@ export default {
       console.log("Add to favorites:", itemId);
     };
 
-    onMounted(() => {
+    onMounted(async() => {
+      await nextTick();
       getDatas();
     });
 
