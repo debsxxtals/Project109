@@ -1,20 +1,21 @@
-import LandingPage from '../views/LandingPage.vue';
-import HomePage from '@/views/HomePage.vue';
+import LandingPage from "../views/LandingPage.vue";
+import HomePage from "@/views/HomePage.vue";
 import CultureInventory from "@/views/CultureInventory.vue";
-import ItemDetails from '@/views/ItemDetails.vue';
-import NotificationStatus from '@/views/NotificationStatus.vue';
+import ItemDetails from "@/views/ItemDetails.vue";
+import NotificationStatus from "@/views/NotificationStatus.vue";
+import ProfileSettings from "@/views/ProfileSettings.vue";
 import { createRouter, createWebHistory } from "vue-router";
 
 // Define your routes
 const routes = [
   {
-    name: 'LandingPage',
+    name: "LandingPage",
     component: LandingPage,
     path: "/",
     meta: { requiresAuth: false }, // No authentication required
   },
   {
-    name: 'HomePage',
+    name: "HomePage",
     component: HomePage,
     path: "/home",
     meta: { requiresAuth: true }, // Authentication required
@@ -26,9 +27,10 @@ const routes = [
     meta: { requiresAuth: true }, // Authentication required
   },
   {
-    path: '/item/:id',
-    name: 'ItemDetails',
+    path: "/item/:id",
+    name: "ItemDetails",
     component: ItemDetails,
+    props: true,
     meta: { requiresAuth: true }, // Authentication required
   },
   {
@@ -37,12 +39,18 @@ const routes = [
     path: "/status",
     meta: { requiresAuth: true }, // Authentication required
   },
+  {
+    name: "Profile",
+    component: ProfileSettings,
+    path: "/settings",
+    meta: { requiresAuth: true }, // Authentication required
+  },
 ];
 
 // Create the Vue Router instance
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes, 
+  routes,
 });
 
 // Navigation guard to check authentication status before entering protected routes
@@ -50,11 +58,11 @@ router.beforeEach((to, from, next) => {
   // If the route requires authentication and the user is not logged in (no access token)
   if (to.meta.requiresAuth && !localStorage.getItem("access_token")) {
     // Redirect to the landing page (login page)
-    next('/');
+    next("/");
   } else {
     // Allow navigation if the user is authenticated or route doesn't require authentication
     next();
   }
 });
 
-export default router; 
+export default router;

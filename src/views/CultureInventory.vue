@@ -10,18 +10,28 @@
         </p>
       </v-col>
       <v-col cols="12">
-        <v-autocomplete
-          class="mx-auto rounded-lg"
-          density="comfortable"
-          menu-icon=""
-          placeholder="Find costume you like to borrow"
-          append-inner-icon="mdi-magnify"
-          style="max-width: 700px"
-          theme="light"
-          variant="solo"
-          item-props
-          clearable
-        ></v-autocomplete>
+        <v-form @submit.prevent="handleSearch" class="d-flex align-center">
+          <v-text-field
+            v-model="searchKeyword"
+            label="Find costume you like to borrow"
+            variant="solo"
+            clearable
+            style="max-width: 700px"
+            class="mx-auto rounded-lg"
+            @click:append-outer="handleSearch"
+          >
+            <template v-slot:append-inner>
+              <v-btn
+                @click.stop="handleSearch"
+                color="primary"
+                icon
+                density="comfortable"
+              >
+                <v-icon>mdi-magnify</v-icon>
+              </v-btn>
+            </template>
+          </v-text-field>
+        </v-form>
       </v-col>
     </v-row>
 
@@ -72,10 +82,16 @@
                     variant="outlined"
                     rounded="lg"
                     size="small"
+                    :color="isFavorite(item.id) ? 'green' : 'default'"
                   >
-                    <v-icon>mdi-heart-outline</v-icon>
+                    <v-icon>{{
+                      isFavorite(item.id) ? "mdi-heart" : "mdi-heart-outline"
+                    }}</v-icon>
                   </v-btn>
                 </v-card-actions>
+                <v-snackbar v-model="snackbar" :timeout="3000" top>
+                  {{ snackbarMessage }}
+                </v-snackbar>
               </v-card-text>
             </v-card>
           </v-col>
@@ -98,26 +114,35 @@
 <script>
 import { supabase } from "../supabase";
 import { useRouter } from "vue-router";
-import { ref, onMounted } from "vue";
-import { nextTick } from "vue";
-
+import { ref, onMounted, nextTick } from "vue";
 
 export default {
   setup() {
     const inventory = ref([]);
+    const searchKeyword = ref("");
     const router = useRouter();
+    const snackbar = ref(false); // Control the snackbar visibility
+    const snackbarMessage = ref(""); // Message to display in snackbar
+    const favorites = ref(new Set()); // Track favorite items using a ref for reactivity
 
-    // Fetch inventory data from Supabase
-    const getDatas = async () => {
-      let { data: inventoryData, error } = await supabase
+    // Function to fetch data with optional search keyword
+    const getDatas = async (keyword = "") => {
+      let { data: items, error } = await supabase
         .from("inventory")
-        .select("*");
+        .select("*")
+        .or(`name.ilike.%${keyword}%,tribe.ilike.%${keyword}%`);
 
       if (error) {
         console.error("Error fetching inventory:", error.message);
       } else {
-        inventory.value = inventoryData;
+        inventory.value = items;
       }
+    };
+
+    // Search handler
+    const handleSearch = (e) => {
+      e.preventDefault();
+      getDatas(searchKeyword.value); // Fetch with the current search keyword
     };
 
     // Navigate to details page
@@ -127,24 +152,137 @@ export default {
       router.push({ name: "ItemDetails", params: { id: itemId } });
     };
 
-    // Add to favorites
-    const addToFavorites = (itemId) => {
-      console.log("Add to favorites:", itemId);
+    // Function to check if an item is in the favorites
+    const isFavorite = (itemId) => {
+      return favorites.value.has(itemId);
     };
 
-    onMounted(async() => {
+    // Function to toggle favorite status (add or remove from favorites)
+    const addToFavorites = async (itemId) => {
+      try {
+        // Step 1: Get the logged-in user's profile
+        const { data: userProfile, error: profileError } = await supabase
+          .from("profiles")
+          .select("uni_id")
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching user profile:", profileError);
+          return;
+        }
+
+        // Step 2: Check if the item is already in the favorites table
+        const { data: favoriteItems, error: favoriteError } = await supabase
+          .from("favorites")
+          .select("*")
+          .eq("user_id", userProfile.uni_id)
+          .eq("item_id", itemId);
+
+        if (favoriteError) {
+          console.error("Error checking favorite items:", favoriteError);
+          return;
+        }
+
+        // Step 3: If item is in favorites, remove it; otherwise, add it
+        if (favoriteItems.length > 0) {
+          // Item is already in favorites, so remove it
+          const { data: removedData, error: removeError } = await supabase
+            .from("favorites")
+            .delete()
+            .match({ user_id: userProfile.uni_id, item_id: itemId });
+
+          if (removeError) {
+            console.error("Error removing item from favorites:", removeError);
+          } else {
+            console.log("Item removed from favorites successfully:", removedData);
+            // Update local state
+            favorites.value.delete(itemId);
+            updateLocalStorage();
+            snackbarMessage.value = "Unsaved from favorites";
+            snackbar.value = true;
+          }
+        } else {
+          // Item is not in favorites, so add it
+          const { data: addedData, error: addError } = await supabase
+            .from("favorites")
+            .insert([{ user_id: userProfile.uni_id, item_id: itemId }]);
+
+          if (addError) {
+            console.error("Error adding item to favorites:", addError);
+          } else {
+            console.log("Item added to favorites successfully:", addedData);
+            // Update local state
+            favorites.value.add(itemId);
+            updateLocalStorage();
+            snackbarMessage.value = "Saved to favorites";
+            snackbar.value = true;
+          }
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      }
+    };
+
+    // Function to fetch user's favorites on login
+    const fetchFavorites = async () => {
+      try {
+        const { data: userProfile, error: profileError } = await supabase
+          .from("profiles")
+          .select("uni_id")
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching user profile:", profileError);
+          return;
+        }
+
+        const { data: favoriteItems, error: favoriteError } = await supabase
+          .from("favorites")
+          .select("item_id")
+          .eq("user_id", userProfile.uni_id);
+
+        if (favoriteError) {
+          console.error("Error fetching favorite items:", favoriteError);
+          return;
+        }
+
+        // Load favorite items into the reactive state
+        favorites.value = new Set(favoriteItems.map(item => item.item_id));
+        localStorage.setItem("favorites", JSON.stringify([...favorites.value]));
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+      }
+    };
+
+    onMounted(async () => {
       await nextTick();
       getDatas();
+      const savedFavorites = JSON.parse(localStorage.getItem("favorites"));
+      if (savedFavorites) {
+        savedFavorites.forEach((itemId) => favorites.value.add(itemId));
+      }
+      fetchFavorites();
     });
+
+    // Function to update localStorage with current favorites state
+    const updateLocalStorage = () => {
+      localStorage.setItem("favorites", JSON.stringify([...favorites.value]));
+    };
 
     return {
       inventory,
+      searchKeyword,
+      handleSearch,
       viewDetails,
+      isFavorite,
       addToFavorites,
+      snackbar,
+      snackbarMessage,
     };
   },
 };
 </script>
+
 
 <style scoped>
 .culture-inventory-container {
