@@ -61,16 +61,19 @@
 </template>
 
 <script setup>
+import NotificationStatusAdmin from "./views/NotificationStatusAdmin.vue";
+import NotificationStatusMember from "./views/NotificationStatusMember.vue";
+
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { supabase } from "./supabase";
 
+const currentComponent = ref(null);
 const drawer = ref(false);
 const router = useRouter();
 const firstName = ref("");
 const lastName = ref("");
 const userEmail = ref("");
-
 
 onMounted(() => {
   getUserData();
@@ -87,12 +90,13 @@ const menuItems = [
   { title: "Home", path: "/home" },
   { title: "Inventory", path: "/inventory" },
   { title: "Status", path: "/status" },
-  { title: "Settings", path: "/settings" },
+  { title: "Profile", path: "/profile" },
   { title: "Logout", action: "logout" },
 ];
 
 async function getUserData() {
   const { data: user, error: userError } = await supabase.auth.getUser();
+
   if (userError) {
     console.log("Error fetching user:", userError);
     return;
@@ -105,7 +109,7 @@ async function getUserData() {
     if (userId) {
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("first_name, last_name")
+        .select("first_name, last_name, role")
         .eq("auth_id", userId)
         .single();
 
@@ -116,6 +120,16 @@ async function getUserData() {
       } else {
         firstName.value = profiles.first_name;
         lastName.value = profiles.last_name;
+
+        // Store user role in localStorage
+        localStorage.setItem("user_role", profiles.role);
+
+        // Set the currentComponent based on the role
+        if (profiles.role === "admin") {
+          currentComponent.value = NotificationStatusAdmin;
+        } else {
+          currentComponent.value = NotificationStatusMember;
+        }
       }
     }
   }
@@ -126,8 +140,37 @@ const isLandingPage = computed(() => router.currentRoute.value.path === "/");
 const handleMenuClick = async (item) => {
   if (item.action === "logout") {
     await logout();
+  } else if (item.path === "/status") {
+    // Check the user's role and navigate accordingly
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      const { data: profiles, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("auth_id", userId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user role:", error);
+        alert("Unable to determine user role.");
+        return;
+      }
+
+      // Block access to /status/member for users with any role
+      if (profiles.role && item.path === "/status/member") {
+        alert("Users with a role cannot access the member status page.");
+        router.push("/status/admin");
+      } else {
+        const statusPath =
+          profiles.role === "admin" ? "/status/admin" : "/status/member";
+        router.push(statusPath);
+      }
+    }
   } else {
-    router.push(item.path);
+    // Navigate to other paths
+    if (router.currentRoute.value.path !== item.path) {
+      router.push(item.path);
+    }
   }
 };
 

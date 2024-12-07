@@ -175,6 +175,8 @@ import { ref, onMounted } from "vue";
 import { supabase } from "../supabase";
 
 export default {
+  name: "ItemDetails",
+
   props: ["id"],
 
   setup(props) {
@@ -193,24 +195,21 @@ export default {
     // Fetch user session
     // Fetch user from localStorage or Supabase session
     const getUser = async () => {
-      const { data: session, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Error fetching session:", error.message);
-        return;
-      }
-      if (session?.user) {
-        // Access the user's email directly from session.user
-        const userEmail = session.user.email;
-        console.log("User Email:", userEmail);
-        user.value = session.user; // Store the entire user object if needed
+      
+      // if (session?.user) {
+      //   // Access the user's email directly from session.user
+      //   const userEmail = session.user.email;
+      //   console.log("User Email:", userEmail);
+      //   user.value = session.user; // Store the entire user object if needed
 
-        // Optionally, you can store the email in your app state or localStorage
-        // localStorage.setItem("userEmail", userEmail);
-      } else {
-        console.log("No user is logged in");
-      }
+      //   // Optionally, you can store the email in your app state or localStorage
+      //   // localStorage.setItem("userEmail", userEmail);
+      // } else {
+      //   console.log("No user is logged in");
+      // }
 
       const userId = localStorage.getItem("userId");
+      console.log(userId);
       if (userId) {
         // Fetch the user profile from the 'profiles' table
         const { data, error } = await supabase
@@ -330,10 +329,12 @@ export default {
 
     const addToFavorites = async (itemId) => {
       try {
+        const user_id = localStorage.getItem("userId");
         // Step 1: Get the logged-in user's profile
         const { data: userProfile, error: profileError } = await supabase
           .from("profiles")
           .select("uni_id")
+          .eq("auth_id", user_id)
           .single();
 
         if (profileError) {
@@ -403,9 +404,11 @@ export default {
 
     const fetchFavorites = async () => {
       try {
+        const user_id = localStorage.getItem("userId");
         const { data: userProfile, error: profileError } = await supabase
           .from("profiles")
           .select("uni_id")
+          .eq("auth_id", user_id)
           .single();
 
         if (profileError) {

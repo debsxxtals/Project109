@@ -44,9 +44,11 @@
 
 <script>
 export default {
+  name: "HomePage",
+
   methods: {
     exploreCollections() {
-      this.$router.push({ name: 'CultureInventory' }); // Redirect to CultureInventory page
+      this.$router.push({ name: "CultureInventory" }); // Redirect to CultureInventory page
     },
   },
 };

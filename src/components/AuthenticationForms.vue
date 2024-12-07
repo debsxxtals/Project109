@@ -329,6 +329,7 @@ export default {
             .from("profiles")
             .select("*")
             .eq("auth_id", user.id);
+            
 
           if (profileError) throw profileError;
 
