@@ -64,8 +64,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const isAuthenticated = localStorage.getItem("access_token"); // Check if the user is authenticated
   const role = localStorage.getItem("role"); // Retrieve role from localStorage
-  console.log(role);
-  // If the user is authenticated and tries to access the landing page, redirect to home
+  console.log('isAuthenticated:', isAuthenticated);    // If the user is authenticated and tries to access the landing page, redirect to home
   if (to.path === "/" && isAuthenticated) {
     next("/home");
   } else if (to.meta.requiresAuth && !isAuthenticated) {
@@ -82,7 +81,7 @@ router.beforeEach(async (to, from, next) => {
     } else {
       // Block access for other roles trying to access restricted routes
       alert("Access Denied: Insufficient permissions.");
-      next(from.path);
+      next("/home");
     }
   } else {
     // Allow navigation for routes that don't require roles

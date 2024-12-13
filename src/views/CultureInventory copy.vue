@@ -70,23 +70,10 @@
 
               <v-card-text>
                 <v-row dense>
-                  <v-col cols="12">
-                    <v-file-input
-                      v-model="formData.image"
-                      label="Costume Image"
-                      accept="image/*"
-                      variant="solo"
-                      prepend-icon="mdi-image"
-                      required
-                      chips
-                      show-size
-                      
-                      density="compact"
-                    ></v-file-input>
-                  </v-col>
 
-                  <!-- Costume Name -->
-                  <v-col cols="12">
+                  
+
+                  <v-col cols="12" md="6" sm="6">
                     <v-text-field
                       v-model="formData.costumeName"
                       variant="solo-filled"
@@ -95,7 +82,6 @@
                     ></v-text-field>
                   </v-col>
 
-                  <!-- Tribes -->
                   <v-col cols="12" md="6" sm="6">
                     <v-text-field
                       v-model="formData.tribes"
@@ -106,8 +92,7 @@
                     ></v-text-field>
                   </v-col>
 
-                  <!-- Category -->
-                  <v-col cols="12" sm="6">
+                  <v-col cols="12" md="5" sm="6">
                     <v-select
                       v-model="formData.category"
                       label="Category"
@@ -122,86 +107,31 @@
                         'Headresses',
                       ]"
                       variant="solo-filled"
-                      required
                     ></v-select>
                   </v-col>
 
-                  <!-- Sizes and Availability -->
-
-                  <v-col cols="6" md="3" sm="3">
-                    <v-text-field
-                      value="Small"
-                      readonly
+                  <v-col cols="12" md="4" sm="6">
+                    <v-select
+                      v-model="formData.size"
+                      label="Size"
+                      :items="['Small', 'Medium', 'Large', 'Extra-Large']"
                       variant="solo-filled"
-                    ></v-text-field>
+                    ></v-select>
                   </v-col>
-                  <v-col cols="6" md="3" sm="3">
+
+                  <v-col cols="12" md="3" sm="3">
                     <v-text-field
-                      v-model="formData.smallAvailability"
+                      v-model="formData.availability"
                       variant="solo-filled"
                       label="Availability"
+                      required
                       type="number"
                       min="0"
                       step="1"
                     ></v-text-field>
                   </v-col>
 
-                  <v-col cols="6" md="3" sm="3">
-                    <v-text-field
-                      value="Medium"
-                      readonly
-                      variant="solo-filled"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="6" md="3" sm="3">
-                    <v-text-field
-                      v-model="formData.mediumAvailability"
-                      variant="solo-filled"
-                      label="Availability"
-                      type="number"
-                      min="0"
-                      step="1"
-                    ></v-text-field>
-                  </v-col>
-
-                  <v-col cols="6" md="3" sm="3">
-                    <v-text-field
-                      value="Large"
-                      readonly
-                      variant="solo-filled"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="6" md="3" sm="3">
-                    <v-text-field
-                      v-model="formData.largeAvailability"
-                      variant="solo-filled"
-                      label="Availability"
-                      type="number"
-                      min="0"
-                      step="1"
-                    ></v-text-field>
-                  </v-col>
-
-                  <v-col cols="6" md="3" sm="3">
-                    <v-text-field
-                      value="Extra-Large"
-                      readonly
-                      variant="solo-filled"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="6" md="3" sm="3">
-                    <v-text-field
-                      v-model="formData.extraLargeAvailability"
-                      variant="solo-filled"
-                      label="Availability"
-                      type="number"
-                      min="0"
-                      step="1"
-                    ></v-text-field>
-                  </v-col>
-
-                  <!-- Brief Details -->
-                  <v-col cols="12">
+                  <v-col cols="12" md="12" sm="9">
                     <v-text-field
                       v-model="formData.briefDetails"
                       variant="solo-filled"
@@ -210,7 +140,6 @@
                     ></v-text-field>
                   </v-col>
 
-                  <!-- Specifications -->
                   <v-col cols="12">
                     <v-textarea
                       v-model="formData.specifications"
@@ -221,11 +150,10 @@
                   </v-col>
                 </v-row>
 
-                <small class="text-caption text-medium-emphasis">
-                  *indicates required field
-                </small>
-
-                <!-- Alert Message -->
+                <small class="text-caption text-medium-emphasis"
+                  >*indicates required field</small
+                >
+                <!-- Alert message here -->
                 <v-alert
                   v-if="alertMessage"
                   :type="alertType"
@@ -240,9 +168,14 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" variant="flat" @click="addItem">
-                  Add
-                </v-btn>
+
+                <v-btn
+                  color="primary"
+                  text="Add"
+                  variant="flat"
+                  type="submit"
+                  @click="addItem"
+                ></v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -343,13 +276,10 @@ export default {
       costumeName: "",
       tribes: "",
       category: "",
-      smallAvailability: 0, // For Small size availability
-      mediumAvailability: 0, // For Medium size availability
-      largeAvailability: 0, // For Large size availability
-      extraLargeAvailability: 0, // For Extra-Large size availability
+      size: "",
+      availability: 0,
       briefDetails: "",
       specifications: "",
-      image: "",
     });
 
     const inventory = ref([]);
@@ -362,142 +292,90 @@ export default {
     const alertType = ref("success"); // Type of alert (success/error)
 
     // Size map to convert the size into enum value
+   
 
-    // Function to add the item to the inventory and item_sizes table
     // Function to add the item to the inventory and item_sizes table
     const addItem = async () => {
-  try {
-    // Validate image file input
-    if (!formData.image) {
-      alertMessage.value = "Please upload an image.";
-      alertType.value = "error";
-      return;
-    }
+      // Map the selected size to the enum value
+      const mappedSize = sizeMap[formData.size];
 
-    // Upload image to Supabase storage
-    const { data: imageData, error: imageUploadError } = await supabase.storage
-      .from("items")
-      .upload(`public/${formData.image.name}`, formData.image, {
-        cacheControl: "3600",
-        upsert: false,
-      });
+      // Insert the costume data into the inventory table
+      const { data: inventoryData, error: inventoryError } = await supabase
+        .from("inventory")
+        .insert([
+          {
+            name: formData.costumeName,
+            category: formData.category,
+            tribe: formData.tribes,
+            details: formData.briefDetails,
+            specifications: formData.specifications,
+          },
+        ])
+        .select();
 
-    if (imageUploadError) {
-      console.error("Error uploading image:", imageUploadError);
-      alertMessage.value = "Error uploading image. Please try again.";
-      alertType.value = "error";
-      return;
-    }
+      if (inventoryError) {
+        console.error("Error inserting into inventory:", inventoryError);
+        alertMessage.value =
+          "Error inserting item into inventory. Please try again.";
+        alertType.value = "error";
+        return;
+      }
 
-    // Insert the costume data into the inventory table
-    const { data: inventoryData, error: inventoryError } = await supabase
-      .from("inventory")
-      .insert([
+      // Check if inventoryData has data
+      if (!inventoryData || inventoryData.length === 0) {
+        console.error("No inventory data returned.");
+        alertMessage.value = "No inventory data returned. Please try again.";
+        alertType.value = "error";
+        return;
+      }
+
+      // Use inventoryData[0].id to get the id of the inserted item
+      const itemId = inventoryData[0].id;
+
+      // Call the upsert function to handle the item size
+      const { error: upsertError } = await supabase.from("item_sizes").insert([
         {
-          name: formData.costumeName,
-          category: formData.category,
-          tribe: formData.tribes,
-          details: formData.briefDetails,
-          specifications: formData.specifications,
-          image_path: imageData.path, // Store image path in the database
+          item_id: itemId, // Ensure this is referencing the correct id
+          size: mappedSize, // Pass the mapped size (e.g., 'S', 'M', etc.)
+          quantity: parseInt(formData.availability), // Ensure availability is an integer
         },
-      ])
-      .select();
+      ]);
 
-    if (inventoryError) {
-      console.error("Error inserting into inventory:", inventoryError);
-      alertMessage.value =
-        "Error inserting item into inventory. Please try again.";
-      alertType.value = "error";
-      return;
-    }
+      if (upsertError) {
+        console.error("Error upserting item size:", upsertError);
+        alertMessage.value = "Error updating item size. Please try again.";
+        alertType.value = "error";
+        return;
+      }
 
-    // Check if inventoryData has data
-    if (!inventoryData || inventoryData.length === 0) {
-      console.error("No inventory data returned.");
-      alertMessage.value = "No inventory data returned. Please try again.";
-      alertType.value = "error";
-      return;
-    }
+      // Success message
+      alertMessage.value = "Item successfully added!";
+      alertType.value = "success";
 
-    // Use inventoryData[0].id to get the id of the inserted item
-    const itemId = inventoryData[0].id;
-
-    // Prepare item sizes data (include sizes with quantity 0)
-    const sizeEntries = [
-      { size: "S", quantity: parseInt(formData.smallAvailability) || 0 },
-      { size: "M", quantity: parseInt(formData.mediumAvailability) || 0 },
-      { size: "L", quantity: parseInt(formData.largeAvailability) || 0 },
-      {
-        size: "XL",
-        quantity: parseInt(formData.extraLargeAvailability) || 0,
-      },
-    ].map((entry) => ({
-      item_id: itemId,
-      size: entry.size, // Directly use the size label (S, M, L, XL)
-      quantity: entry.quantity,
-    }));
-
-    // Insert sizes into item_sizes table
-    const { error: upsertError } = await supabase
-      .from("item_sizes")
-      .insert(sizeEntries);
-
-    if (upsertError) {
-      console.error("Error inserting item sizes:", upsertError);
-      alertMessage.value = "Error adding item sizes. Please try again.";
-      alertType.value = "error";
-      return;
-    }
-
-    // Success message
-    alertMessage.value = "Item successfully added!";
-    alertType.value = "success";
-
-    // Reset form data
-    Object.assign(formData, {
-      costumeName: "",
-      tribes: "",
-      category: "",
-      smallAvailability: 0,
-      mediumAvailability: 0,
-      largeAvailability: 0,
-      extraLargeAvailability: 0,
-      briefDetails: "",
-      specifications: "",
-      image: null, // Reset image field
-    });
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    alertMessage.value = "An unexpected error occurred. Please try again.";
-    alertType.value = "error";
-  }
-};
-
+      formData.value = {
+        costumeName: "",
+        tribes: "",
+        category: "",
+        size: "",
+        availability: "",
+        briefDetails: "",
+        specifications: "",
+      };
+    };
 
     // Function to fetch data with optional search keyword
     const getDatas = async (keyword = "") => {
-  const baseImageUrl = "https://mqablnufetjbxivjsycu.supabase.co/storage/v1/object/public/items/";
-  
-  let { data: items, error } = await supabase
-    .from("inventory")
-    .select("*")
-    .or(`name.ilike.%${keyword}%,tribe.ilike.%${keyword}%`)
-    .order("name", { ascending: true });
+      let { data: items, error } = await supabase
+        .from("inventory")
+        .select("*")
+        .or(`name.ilike.%${keyword}%,tribe.ilike.%${keyword}%`);
 
-  if (error) {
-    console.error("Error fetching inventory:", error.message);
-  } else {
-    // Add full image URL to each item
-    items = items.map(item => ({
-      ...item,
-      image: item.image_path ? `${baseImageUrl}${item.image_path}` : null
-    }));
-    
-    inventory.value = items;
-  }
-};
-
+      if (error) {
+        console.error("Error fetching inventory:", error.message);
+      } else {
+        inventory.value = items;
+      }
+    };
 
     // Search handler
     const handleSearch = (e) => {

@@ -25,96 +25,117 @@
 
       <!-- Form Column -->
       <v-col cols="12" sm="6" order-sm="1">
-        <v-card
-          class="pa-3 ma-4 floating-card text-black"
-          fluid
-          elevation="8"
-          rounded="lg"
-        >
+        <v-card class="pa-6 ma-2 shadow-md" fluid elevation="8" rounded="lg">
           <v-card-title
-            class="text-h5 mt-10 font-weight-bold font-weight-medium mb-0 pb-0 text-center"
+            class="text-h5 font-weight-bold mb-0 pb-0 text-center text-primary"
           >
-            Connect with us
+            Connect with Us
           </v-card-title>
-          <v-card-text class="text-center text-body-2 mt-0 pt-0 mb-4">
-            Enter your credential to login</v-card-text
+          <v-card-text class="text-center text-body-2 mb-6">
+            Enter your credentials to login
+          </v-card-text>
+
+          <!-- Notification Alert -->
+          <v-alert
+            v-if="currentCard === 'login' && notificationMessage"
+            :type="notificationType"
+            class="mb-4 rounded-md"
+            border="start"
+            elevation="2"
+            prominent
+            dismissible
+            @click:close="clearNotification"
           >
+            <span v-html="notificationMessage"></span>
+          </v-alert>
 
-          <v-card-text>
-            <!-- Notification Alert -->
-            <v-alert
-              v-if="currentCard === 'login' && notificationMessage"
-              :type="notificationType"
+          <!-- Login Form -->
+          <v-form ref="loginForm" @submit.prevent="handleLogin">
+            <div class="text-subtitle-1 text-black mb-2">Account</div>
+
+            <v-text-field
+              density="compact"
+              placeholder="Email address"
+              prepend-inner-icon="mdi-email-outline"
+              variant="outlined"
+              v-model="emailL"
+              :rules="[rules.validEmail]"
+              required
               class="mb-4"
-              border="start"
-              elevation="2"
-              prominent
-              dismissible
-              @click:close="clearNotification"
+            ></v-text-field>
+
+            <div
+              class="text-subtitle-1 text-black d-flex align-center justify-space-between mb-2"
             >
-              <span v-html="notificationMessage"></span>
-            </v-alert>
-
-            <!-- Login Form -->
-            <v-form ref="loginForm" @submit.prevent="handleLogin">
-              <div class="text-subtitle-1 text-black">Account</div>
-
-              <v-text-field
-                density="compact"
-                placeholder="Email address"
-                prepend-inner-icon="mdi-email-outline"
-                variant="outlined"
-                v-model="emailL"
-                :rules="[rules.validEmail]"
-                required
-              ></v-text-field>
-
-              <div
-                class="text-subtitle-1 text-black d-flex align-center justify-space-between"
+              <span>Password</span>
+              <a
+                class="text-caption text-decoration-none text-cyan-lighten-1"
+                href="#"
               >
-                Password
-                <a
-                  class="text-caption text-decoration-none text-cyan-lighten-1 text-end"
-                  href="#"
-                >
-                  Forgot login password?
-                </a>
-              </div>
+                Forgot login password?
+              </a>
+            </div>
 
-              <v-text-field
-                :append-inner-icon="visible ? 'mdi-eye' : 'mdi-eye-off'"
-                :type="visible ? 'text' : 'password'"
-                density="compact"
-                placeholder="Enter your password"
-                prepend-inner-icon="mdi-lock-outline"
-                variant="outlined"
-                v-model="passwordL"
-                :rules="[rules.required]"
-                @click:append-inner="togglePasswordVisibility"
-              ></v-text-field>
+            <v-text-field
+              :append-inner-icon="visible ? 'mdi-eye' : 'mdi-eye-off'"
+              :type="visible ? 'text' : 'password'"
+              density="compact"
+              placeholder="Enter your password"
+              prepend-inner-icon="mdi-lock-outline"
+              variant="outlined"
+              v-model="passwordL"
+              :rules="[rules.required]"
+              @click:append-inner="togglePasswordVisibility"
+              class="mb-4"
+            ></v-text-field>
 
-              <v-btn
-                class="my-10 text-uppercase"
-                color="primary"
-                size="large"
-                variant="elevated"
-                block
-                :loading="loading"
-                type="submit"
-              >
-                Login
-              </v-btn>
+            <v-btn
+              class="my-4 text-uppercase"
+              color="primary"
+              size="large"
+              variant="elevated"
+              block
+              :loading="loading"
+              type="submit"
+            >
+              Login
+            </v-btn>
+          </v-form>
 
-              <v-card-text class="text-center">
-                <span class="d-block">Don't have an account?</span>
-                <a
-                  class="text-cyan-lighten-1 text-decoration-none"
-                  @click="scrollToSection('register')"
-                >
-                  Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
-                </a>
-              </v-card-text>
-            </v-form>
+          <!-- Divider -->
+          <v-row class="items-center justify-center my-6 mt-8">
+            <v-col class="flex-grow-1">
+              <v-divider></v-divider>
+            </v-col>
+
+            <v-col class="text-center pa-0">
+              <span class="text-gray-500 font-weight-medium">OR</span>
+            </v-col>
+
+            <v-col class="flex-grow-1">
+              <v-divider></v-divider>
+            </v-col>
+          </v-row>
+
+          <!-- Google Login Button -->
+          <v-btn
+            @click="loginWithGoogle"
+            prepend-icon="mdi-google"
+            variant="outlined"
+            class="mx-auto d-block mb-6 d-flex align-center"
+            style="color: black; font-weight: bold"
+          >
+            Login with Google
+          </v-btn>
+
+          <v-card-text class="text-center">
+            <span class="d-block mb-2">Don't have an account?</span>
+            <a
+              class="text-cyan-lighten-1 text-decoration-none"
+              @click="scrollToSection('register')"
+            >
+              Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
+            </a>
           </v-card-text>
         </v-card>
       </v-col>
@@ -127,14 +148,14 @@
       <!-- Form Column -->
 
       <v-card
-        class="pa-3 ma-sm-4 floating-card text-black"
+        class="pa-3 ma-sm-2 floating-card text-black"
         fluid
         elevation="8"
         rounded="lg"
         max-width="800px"
       >
         <v-card-title
-          class="text-h6 font-weight-bold text-sm-h5 mt-5 font-weight-medium mb-0 pb-0 text-center"
+          class="text-h6 font-weight-bold text-sm-h5 mt-5 font-weight-medium mb-0 pb-0 text-center text-primary"
         >
           Create an account
         </v-card-title>
@@ -261,7 +282,7 @@
 </template>
 
 <script>
-import { supabase } from "../supabase";
+import { supabase, loginWithGoogle } from "../supabase";
 
 export default {
   data() {
@@ -298,6 +319,133 @@ export default {
   },
 
   methods: {
+
+    loginWithGoogle,
+    // Function to sync user profile with the `profiles` table
+    async syncUserProfile() {
+      // Get the authenticated user
+      const user = supabase.auth.user();
+
+      if (user) {
+        const { id, email, user_metadata } = user;
+
+        // Insert or update profile information in the `profiles` table
+        const { error } = await supabase.from("profiles").upsert({
+          id, // Matches the `auth.users.id`
+          email,
+          full_name: user_metadata?.full_name || null,
+          avatar_url: user_metadata?.avatar_url || null,
+        });
+
+        if (error) {
+          console.error("Error syncing profile:", error);
+        } else {
+          console.log("Profile synced successfully");
+        }
+      }
+    },
+
+    // Google login function
+    // async signInWithGoogle() {
+    //   const { user, session, error } = await supabase.auth.signInWithOAuth({
+    //     provider: "google",
+    //   });
+
+    //   if (error) {
+    //     console.error(error.message);
+    //     return;
+    //   }
+
+    //   console.log("User:", user);
+    //   console.log("Session:", session);
+    // },
+
+    // async signInWithGoogle() {
+    //   try {
+    //     // Start Google OAuth login process
+    //     const { error } = await supabase.auth.signInWithOAuth({
+    //       provider: "google",
+    //       options: {
+    //         redirectTo: `${window.location.origin}/home`, // Redirect to the callback page after successful login
+    //       },
+    //     });
+
+    //     if (error) {
+    //       console.error("Error signing in with Google:", error.message);
+    //       return;
+    //     }
+
+    //     // If no error, the user is redirected to the specified callback page
+    //     console.log("Redirecting to Google login...");
+    //   } catch (error) {
+    //     console.error("Error during Google login:", error.message);
+    //   }
+    // },
+
+    // async signInWithGoogle() {
+    //   try {
+    //     // Log in using Google OAuth
+    //     const { error } = await supabase.auth.signInWithOAuth({
+    //       provider: "google",
+    //       options: {
+    //         redirectTo: `${window.location.origin}/home`, // After login, redirect to home
+    //       },
+    //     });
+
+    //     if (error) throw error;
+
+    //     // Wait for session to be set
+    //     const { data: sessionData, error: sessionError } =
+    //       await supabase.auth.getSession();
+    //     if (sessionError) throw sessionError;
+
+    //     const session = sessionData.session;
+    //     if (session) {
+    //       console.log("Session after login:", session);
+
+    //       // Extract user data from session
+    //       const userId = session.user.id; // Supabase Auth User ID
+    //       const userMetadata = session.user.user_metadata; // Metadata from Google account (e.g., full name, avatar)
+
+    //       // Save user data to localStorage first
+    //       localStorage.setItem("google_id", userId);
+    //       localStorage.setItem("name", userMetadata.full_name);
+    //       localStorage.setItem("email", session.user.email);
+    //       localStorage.setItem("avatar", userMetadata.avatar_url);
+    //       localStorage.setItem("access_token", session.access_token);
+    //       localStorage.setItem("refresh_token", session.refresh_token);
+
+    //       console.log("Data saved to localStorage.");
+
+    //       // After saving to localStorage, insert user data into the profiles table
+    //       const { error: profileError } = await supabase
+    //         .from("profiles")
+    //         .insert(
+    //           {
+    //             auth_id: userId, // Use `auth_id` to match with `auth.users`
+    //             full_name: userMetadata.full_name, // Full name from Google
+    //             email: session.user.email, // Email from Google
+    //             image_path: userMetadata.avatar_url, // Avatar URL from Google
+    //           },
+    //           { onConflict: "auth_id" } // Update the profile if `auth_id` already exists
+    //         );
+
+    //       if (profileError) {
+    //         console.error(
+    //           "Error inserting/updating profile:",
+    //           profileError.message
+    //         );
+    //       } else {
+    //         console.log("Profile saved successfully to the profiles table.");
+    //       }
+    //     } else {
+    //       console.error("No session found after login.");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error logging in with Google:", error.message);
+    //   }
+    // },
+
     togglePasswordVisibility() {
       this.visible = !this.visible;
     },
@@ -329,7 +477,6 @@ export default {
             .from("profiles")
             .select("*")
             .eq("auth_id", user.id);
-            
 
           if (profileError) throw profileError;
 
@@ -357,7 +504,8 @@ export default {
         this.notificationType = "error";
       } finally {
         this.loading = false;
-        this.$refs.loginForm.reset();
+        this.emailL = "";
+        this.passwordL = "";
       }
     },
 

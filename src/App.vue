@@ -5,7 +5,7 @@
       <v-toolbar-title>Culture Closet</v-toolbar-title>
     </v-app-bar>
 
-    <v-navigation-drawer v-show="!isLandingPage" v-model="drawer" app>
+    <v-navigation-drawer v-if="!isLandingPage" v-model="drawer" app>
       <v-list-item class="d-flex flex-column align-center my-5">
         <v-avatar image="/images/default.jpg" size="50" border="sm"></v-avatar>
         <v-list-item-title class="text-h6 text-center">{{
@@ -77,6 +77,7 @@ const userEmail = ref("");
 
 onMounted(() => {
   getUserData();
+  refreshSession();
 });
 
 const icons = ref([
@@ -93,6 +94,17 @@ const menuItems = [
   { title: "Profile", path: "/profile" },
   { title: "Logout", action: "logout" },
 ];
+
+async function refreshSession() {
+  const { data, error } = await supabase.auth.refreshSession();
+  if (data) {
+    console.log("Session refreshed:", data);
+    localStorage.setItem("access_token", data.access_token); // Store the new access token
+    localStorage.setItem("refresh_token", data.refresh_token); // Store the refresh token
+  } else {
+    console.log("Error refreshing session:", error);
+  }
+}
 
 async function getUserData() {
   const { data: user, error: userError } = await supabase.auth.getUser();
@@ -175,13 +187,14 @@ const handleMenuClick = async (item) => {
 };
 
 const logout = async () => {
-  const { error } = await supabase.auth.signOut();
-  if (!error) {
-    alert("Logging out...");
-    await router.push("/");
-    localStorage.clear();
-  } else {
-    alert("Logout failed: " + error.message);
+  console.log("Logging out...");
+  try {
+    await supabase.auth.signOut();
+    localStorage.removeItem("access_token");
+    console.log("User logged out");
+    router.push("/");
+  } catch (error) {
+    console.error("Error logging out", error.message);
   }
 };
 </script>

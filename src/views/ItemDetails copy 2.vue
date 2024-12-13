@@ -135,7 +135,197 @@
               >
                 Borrow Now
               </v-btn>
+              
+              <v-dialog v-model="dialog" max-width="600">
+            <template v-slot:activator="{ props: activatorProps }">
+              <v-btn
+                size="large"
+                class="ml-4 mb-5"
+                color="primary"
+                v-bind="activatorProps"
+                v-if="role === 'admin'"
+              >
+                Edit Item
+              </v-btn>
+            </template>
 
+            <v-card>
+              <v-card-title class="d-flex align-center justify-space-between">
+                <div class="d-flex align-center">
+                  <v-icon class="mr-2" dark>mdi-hanger</v-icon>
+                  <span class="text-h6">Edit Costume Item</span>
+                </div>
+                <v-btn
+                  icon="mdi-window-close"
+                  @click="dialog = false"
+                  variant="plain"
+                  class="ml-2"
+                ></v-btn>
+              </v-card-title>
+
+              <v-card-text>
+                <v-row dense>
+                  <!-- Costume Name -->
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="formData.costumeName"
+                      variant="solo-filled"
+                      label="Costume Name"
+                      required
+                    ></v-text-field>
+                  </v-col>
+
+                  <!-- Tribes -->
+                  <v-col cols="12" md="6" sm="6">
+                    <v-text-field
+                      v-model="formData.tribes"
+                      hint=" (e.g Manobo, Tagalog, Butuanon)"
+                      label="Tribes"
+                      variant="solo-filled"
+                      required
+                    ></v-text-field>
+                  </v-col>
+
+                  <!-- Category -->
+                  <v-col cols="12" sm="6">
+                    <v-select
+                      v-model="formData.category"
+                      label="Category"
+                      :items="[
+                        'Top',
+                        'Bottom',
+                        'Set',
+                        'Dresses',
+                        'Outerwear',
+                        'Footwear',
+                        'Accessories',
+                        'Headresses',
+                      ]"
+                      variant="solo-filled"
+                      required
+                    ></v-select>
+                  </v-col>
+
+                  <!-- Sizes and Availability -->
+
+                  <v-col cols="6" md="3" sm="3">
+                    <v-text-field
+                      value="Small"
+                      readonly
+                      variant="solo-filled"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="6" md="3" sm="3">
+                    <v-text-field
+                      v-model="formData.smallAvailability"
+                      variant="solo-filled"
+                      label="Availability"
+                      type="number"
+                      min="0"
+                      step="1"
+                    ></v-text-field>
+                  </v-col>
+
+                  <v-col cols="6" md="3" sm="3">
+                    <v-text-field
+                      value="Medium"
+                      readonly
+                      variant="solo-filled"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="6" md="3" sm="3">
+                    <v-text-field
+                      v-model="formData.mediumAvailability"
+                      variant="solo-filled"
+                      label="Availability"
+                      type="number"
+                      min="0"
+                      step="1"
+                    ></v-text-field>
+                  </v-col>
+
+                  <v-col cols="6" md="3" sm="3">
+                    <v-text-field
+                      value="Large"
+                      readonly
+                      variant="solo-filled"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="6" md="3" sm="3">
+                    <v-text-field
+                      v-model="formData.largeAvailability"
+                      variant="solo-filled"
+                      label="Availability"
+                      type="number"
+                      min="0"
+                      step="1"
+                    ></v-text-field>
+                  </v-col>
+
+                  <v-col cols="6" md="3" sm="3">
+                    <v-text-field
+                      value="Extra-Large"
+                      readonly
+                      variant="solo-filled"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="6" md="3" sm="3">
+                    <v-text-field
+                      v-model="formData.extraLargeAvailability"
+                      variant="solo-filled"
+                      label="Availability"
+                      type="number"
+                      min="0"
+                      step="1"
+                    ></v-text-field>
+                  </v-col>
+
+                  <!-- Brief Details -->
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="formData.briefDetails"
+                      variant="solo-filled"
+                      label="Brief Details"
+                      required
+                    ></v-text-field>
+                  </v-col>
+
+                  <!-- Specifications -->
+                  <v-col cols="12">
+                    <v-textarea
+                      v-model="formData.specifications"
+                      variant="solo-filled"
+                      label="Costume Specifications and Description"
+                      required
+                    ></v-textarea>
+                  </v-col>
+                </v-row>
+
+                <small class="text-caption text-medium-emphasis">
+                  *indicates required field
+                </small>
+
+                <!-- Alert Message -->
+                <v-alert
+                  v-if="alertMessage"
+                  :type="alertType"
+                  dismissible
+                  class="mt-4"
+                >
+                  {{ alertMessage }}
+                </v-alert>
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" variant="flat" @click="addItem">
+                  Save Edit
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
               <v-card-actions class="pa-0 ml-4 mr-4">
                 <v-btn
                   icon

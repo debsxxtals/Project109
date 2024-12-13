@@ -6,7 +6,7 @@
         <v-col cols="12" sm="6" md="7">
           <v-card-item>
             <v-img
-              :src="item.image"
+              :src="item.imageUrl"
               min-height="300px"
               max-height="400px"
               class="white--text"
@@ -127,6 +127,7 @@
             <v-col cols="4" md="3"></v-col>
             <v-col cols="8" md="9" class="d-flex align-center">
               <v-btn
+                v-if="role === null"
                 color="amber"
                 rounded="lg"
                 :loading="loading"
@@ -135,6 +136,212 @@
               >
                 Borrow Now
               </v-btn>
+
+              <v-dialog v-model="dialog" max-width="600">
+                <template v-slot:activator="{ props: activatorProps }">
+                  <v-btn
+                    size="large"
+                    class="ml-4 mb-5"
+                    color="primary"
+                    v-bind="activatorProps"
+                    @click="openEditDialog(itemId)"
+                    v-if="role === 'admin'"
+                  >
+                    Edit Item
+                  </v-btn>
+                </template>
+
+                <v-card>
+                  <v-card-title
+                    class="d-flex align-center justify-space-between"
+                  >
+                    <div class="d-flex align-center">
+                      <v-icon class="mr-2" dark>mdi-hanger</v-icon>
+                      <span class="text-h6">Add Costume Item</span>
+                    </div>
+                    <v-btn
+                      icon="mdi-window-close"
+                      @click="dialog = false"
+                      variant="plain"
+                      class="ml-2"
+                    ></v-btn>
+                  </v-card-title>
+
+                  <v-card-text>
+                    <v-row dense>
+                      <v-file-input
+                        v-model="formData.image"
+                        label="Costume Image"
+                        accept="image/*"
+                        variant="solo"
+                        prepend-icon="mdi-image"
+                        required
+                        chips
+                        show-size
+                        density="compact"
+                      ></v-file-input>
+
+                      <!-- Costume Name -->
+                      <v-col cols="12">
+                        <v-text-field
+                          v-model="formData.costumeName"
+                          variant="solo-filled"
+                          label="Costume Name"
+                          required
+                        ></v-text-field>
+                      </v-col>
+
+                      <!-- Tribes -->
+                      <v-col cols="12" md="6" sm="6">
+                        <v-text-field
+                          v-model="formData.tribes"
+                          hint=" (e.g Manobo, Tagalog, Butuanon)"
+                          label="Tribes"
+                          variant="solo-filled"
+                          required
+                        ></v-text-field>
+                      </v-col>
+
+                      <!-- Category -->
+                      <v-col cols="12" sm="6">
+                        <v-select
+                          v-model="formData.category"
+                          label="Category"
+                          :items="[
+                            'Top',
+                            'Bottom',
+                            'Set',
+                            'Dresses',
+                            'Outerwear',
+                            'Footwear',
+                            'Accessories',
+                            'Headresses',
+                          ]"
+                          variant="solo-filled"
+                          required
+                        ></v-select>
+                      </v-col>
+
+                      <!-- Sizes and Availability -->
+
+                      <v-col cols="6" md="3" sm="3">
+                        <v-text-field
+                          value="Small"
+                          readonly
+                          variant="solo-filled"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="6" md="3" sm="3">
+                        <v-text-field
+                          v-model="formData.smallAvailability"
+                          variant="solo-filled"
+                          label="Availability"
+                          type="number"
+                          min="0"
+                          step="1"
+                        ></v-text-field>
+                      </v-col>
+
+                      <v-col cols="6" md="3" sm="3">
+                        <v-text-field
+                          value="Medium"
+                          readonly
+                          variant="solo-filled"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="6" md="3" sm="3">
+                        <v-text-field
+                          v-model="formData.mediumAvailability"
+                          variant="solo-filled"
+                          label="Availability"
+                          type="number"
+                          min="0"
+                          step="1"
+                        ></v-text-field>
+                      </v-col>
+
+                      <v-col cols="6" md="3" sm="3">
+                        <v-text-field
+                          value="Large"
+                          readonly
+                          variant="solo-filled"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="6" md="3" sm="3">
+                        <v-text-field
+                          v-model="formData.largeAvailability"
+                          variant="solo-filled"
+                          label="Availability"
+                          type="number"
+                          min="0"
+                          step="1"
+                        ></v-text-field>
+                      </v-col>
+
+                      <v-col cols="6" md="3" sm="3">
+                        <v-text-field
+                          value="Extra-Large"
+                          readonly
+                          variant="solo-filled"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="6" md="3" sm="3">
+                        <v-text-field
+                          v-model="formData.extraLargeAvailability"
+                          variant="solo-filled"
+                          label="Availability"
+                          type="number"
+                          min="0"
+                          step="1"
+                        ></v-text-field>
+                      </v-col>
+
+                      <!-- Brief Details -->
+                      <v-col cols="12">
+                        <v-text-field
+                          v-model="formData.briefDetails"
+                          variant="solo-filled"
+                          label="Brief Details"
+                          required
+                        ></v-text-field>
+                      </v-col>
+
+                      <!-- Specifications -->
+                      <v-col cols="12">
+                        <v-textarea
+                          v-model="formData.specifications"
+                          variant="solo-filled"
+                          label="Costume Specifications and Description"
+                          required
+                        ></v-textarea>
+                      </v-col>
+                    </v-row>
+
+                    <small class="text-caption text-medium-emphasis">
+                      *indicates required field
+                    </small>
+
+                    <!-- Alert Message -->
+                    <v-alert
+                      v-if="alertMessage"
+                      :type="alertType"
+                      dismissible
+                      class="mt-4"
+                    >
+                      {{ alertMessage }}
+                    </v-alert>
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" variant="flat" @click="saveEdit">
+                      Save Changes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
 
               <v-card-actions class="pa-0 ml-4 mr-4">
                 <v-btn
@@ -151,8 +358,8 @@
                 </v-btn>
               </v-card-actions>
               <v-snackbar v-model="snackbar" :timeout="3000" top>
-                  {{ snackbarMessage }}
-                </v-snackbar>
+                {{ snackbarMessage }}
+              </v-snackbar>
             </v-col>
           </v-row>
 
@@ -171,7 +378,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive, watch } from "vue";
 import { supabase } from "../supabase";
 
 export default {
@@ -180,6 +387,188 @@ export default {
   props: ["id"],
 
   setup(props) {
+    const role = ref(
+      localStorage.getItem("role") === "null"
+        ? null
+        : localStorage.getItem("role")
+    );
+
+    // Ref for dialog visibility
+    const dialog = ref(false);
+    const itemId = ref(null);
+
+    const formData = reactive({
+      costumeName: "",
+      tribes: "",
+      category: "",
+      briefDetails: "",
+      specifications: "",
+      smallAvailability: "",
+      mediumAvailability: "",
+      largeAvailability: "",
+      extraLargeAvailability: "",
+      image: "",
+      imageUrl: "",
+    });
+
+    const alertMessage = ref("");
+    const alertType = ref("");
+
+    const fetchItemForEdit = async () => {
+      try {
+        // Fetch inventory data
+        const { data: inventoryData, error: inventoryError } = await supabase
+          .from("inventory")
+          .select("*")
+          .eq("id", props.id)
+          .single();
+
+        if (inventoryError) throw inventoryError;
+
+        // Assign inventory data to formData
+        formData.costumeName = inventoryData.name;
+        formData.tribes = inventoryData.tribe;
+        formData.category = inventoryData.category;
+        formData.briefDetails = inventoryData.details;
+        formData.specifications = inventoryData.specifications;
+
+        // Fetch the image path and generate the URL
+        if (inventoryData.image_path) {
+          const { data: imageUrl, error: imageError } = supabase.storage
+            .from("items")
+            .getPublicUrl("public/" + inventoryData.image_path);
+
+          if (imageError) throw imageError;
+
+          formData.imageUrl = imageUrl.publicUrl; // Add image URL to formData
+        } else {
+          formData.imageUrl = null; // Handle case where no image is provided
+        }
+
+        // Fetch availability data for the item from the item_sizes table
+        const { data: sizeData, error: sizeError } = await supabase
+          .from("item_sizes")
+          .select("size, quantity")
+          .eq("item_id", props.id);
+
+        if (sizeError) throw sizeError;
+
+        // Assign availability data to formData based on size
+        sizeData.forEach((item) => {
+          if (item.size === "S") {
+            formData.smallAvailability = item.quantity;
+          } else if (item.size === "M") {
+            formData.mediumAvailability = item.quantity;
+          } else if (item.size === "L") {
+            formData.largeAvailability = item.quantity;
+          } else if (item.size === "XL") {
+            formData.extraLargeAvailability = item.quantity;
+          }
+        });
+      } catch (error) {
+        console.error("Error fetching item:", error);
+        alertMessage.value = "Failed to fetch item data.";
+        alertType.value = "error";
+      }
+    };
+
+    const saveEdit = async () => {
+      try {
+        let imagePath = formData.imageUrl; // Default to the current image path if no new image is selected.
+
+        // If a new image is selected, upload it to Supabase storage
+        if (formData.image) {
+          const fileName = `public/${props.id}_${formData.image.name}`; // Create a unique path for the image.
+
+          // Upload the image to Supabase storage
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage
+              .from("items")
+              .upload(fileName, formData.image, {
+                cacheControl: "3600",
+                upsert: true, // Set this to true to overwrite existing files with the same name
+              });
+
+          if (uploadError) {
+            console.error("Image upload error:", uploadError);
+            throw uploadError;
+          }
+
+          // Get the public URL of the uploaded image (if needed)
+          imagePath = uploadData.path;
+        }
+
+        // Update inventory table (excluding image)
+        const { error: inventoryError } = await supabase
+          .from("inventory")
+          .update({
+            name: formData.costumeName,
+            tribe: formData.tribes,
+            category: formData.category,
+            details: formData.briefDetails,
+            specifications: formData.specifications,
+            image_path: imagePath, // Update with the new image path if uploaded
+          })
+          .eq("id", props.id);
+
+        if (inventoryError) throw inventoryError;
+
+        // Update item_sizes table for each size
+        const updateSizePromises = [];
+        const sizes = [
+          { size: "S", availability: formData.smallAvailability },
+          { size: "M", availability: formData.mediumAvailability },
+          { size: "L", availability: formData.largeAvailability },
+          { size: "XL", availability: formData.extraLargeAvailability },
+        ];
+
+        sizes.forEach(({ size, availability }) => {
+          if (availability !== "") {
+            updateSizePromises.push(
+              supabase
+                .from("item_sizes")
+                .upsert({
+                  item_id: props.id,
+                  size: size,
+                  quantity: availability,
+                })
+                .eq("item_id", props.id)
+                .eq("size", size)
+            );
+          }
+        });
+
+        // Wait for all updates to finish
+        await Promise.all(updateSizePromises);
+
+        // Success message
+        alertMessage.value =
+          "Costume item and availability successfully updated!";
+        alertType.value = "success";
+        dialog.value = false;
+        resetForm();
+      } catch (error) {
+        console.error("Error updating item:", error);
+        alertMessage.value =
+          "An error occurred while updating the costume item.";
+        alertType.value = "error";
+      }
+    };
+
+    // Reset form data after saving
+    const resetForm = () => {
+      Object.keys(formData).forEach((key) => {
+        formData[key] = key.includes("Availability") ? 0 : "";
+      });
+    };
+
+    // Open the dialog and fetch data for editing
+    const openEditDialog = () => {
+      itemId.value = props.id;
+      fetchItemForEdit();
+      dialog.value = true;
+    };
+
     const user = ref(null);
     const loading = ref(false);
     const selectedSize = ref(null);
@@ -195,7 +584,6 @@ export default {
     // Fetch user session
     // Fetch user from localStorage or Supabase session
     const getUser = async () => {
-      
       // if (session?.user) {
       //   // Access the user's email directly from session.user
       //   const userEmail = session.user.email;
@@ -233,13 +621,32 @@ export default {
 
     // Fetch item details
     const getItemDetails = async () => {
-      const { data, error } = await supabase
-        .from("inventory")
-        .select("*")
-        .eq("id", props.id)
-        .single();
-      if (error) console.error(error);
-      else item.value = data;
+      try {
+        // Fetch item details from the inventory table
+        const { data, error } = await supabase
+          .from("inventory")
+          .select("*")
+          .eq("id", props.id)
+          .single();
+
+        if (error) throw error;
+
+        // If the item has an image path, fetch the image URL from Supabase storage
+        if (data.image_path) {
+          const { data: imageUrlData, error: imageError } =
+            await supabase.storage.from("items").getPublicUrl(data.image_path); // Assuming image_path is just the path, not the full URL
+
+          if (imageError) throw imageError;
+
+          // Add the image URL to the item data
+          data.imageUrl = imageUrlData.publicUrl;
+        }
+
+        // Assign the fetched data to the item ref
+        item.value = { ...data }; // Spread the data to ensure reactivity
+      } catch (error) {
+        console.error("Error fetching item details:", error.message);
+      }
     };
 
     // Fetch item sizes
@@ -248,10 +655,21 @@ export default {
         .from("item_sizes")
         .select("size, quantity")
         .eq("item_id", props.id);
-      if (error) console.error(error);
-      else {
-        sizes.value = data.map((item) => item.size);
-        sizeQuantities.value = data.reduce(
+
+      if (error) {
+        console.error(error);
+      } else {
+        // Define your custom order for sizes
+        const customOrder = ["S", "M", "L", "XL"];
+
+        // Sort data based on the custom order
+        const sortedData = data.sort((a, b) => {
+          return customOrder.indexOf(a.size) - customOrder.indexOf(b.size);
+        });
+
+        // Map sizes and quantities
+        sizes.value = sortedData.map((item) => item.size);
+        sizeQuantities.value = sortedData.reduce(
           (acc, curr) => ({ ...acc, [curr.size]: curr.quantity }),
           {}
         );
@@ -365,7 +783,10 @@ export default {
           if (removeError) {
             console.error("Error removing item from favorites:", removeError);
           } else {
-            console.log("Item removed from favorites successfully:", removedData);
+            console.log(
+              "Item removed from favorites successfully:",
+              removedData
+            );
             // Update local state
             favorites.value.delete(itemId);
             updateLocalStorage();
@@ -427,12 +848,15 @@ export default {
         }
 
         // Load favorite items into the reactive state
-        favorites.value = new Set(favoriteItems.map(item => item.item_id));
+        favorites.value = new Set(favoriteItems.map((item) => item.item_id));
         localStorage.setItem("favorites", JSON.stringify([...favorites.value]));
       } catch (err) {
         console.error("Error fetching favorites:", err);
       }
     };
+    watch(role, (newRole) => {
+      console.log("Role changed:", newRole);
+    });
 
     // Fetch item details on mounted
     onMounted(async () => {
@@ -467,6 +891,14 @@ export default {
       isFavorite,
       snackbar,
       snackbarMessage,
+      role,
+      dialog,
+      alertMessage,
+      alertType,
+      formData,
+
+      openEditDialog,
+      saveEdit,
     };
   },
 };

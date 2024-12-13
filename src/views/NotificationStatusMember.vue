@@ -135,7 +135,7 @@ export default {
       }
 
       const { data, error } = await supabase
-        .from("transaction_due_date")
+        .from("transaction_with_due_date")
         .select(
           `transact_id, size, quantity, created_at, date_approved, due_date, first_name, last_name, item_name, uni_id, transact_status`
         )

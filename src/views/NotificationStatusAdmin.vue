@@ -9,19 +9,27 @@
       </p>
     </v-col>
     <v-col cols="12">
-      <v-autocomplete
-        :items="items"
-        class="mx-auto rounded-lg"
-        density="comfortable"
-        menu-icon=""
-        placeholder="Find costume you like to borrow"
-        append-inner-icon="mdi-magnify"
-        style="max-width: 700px"
-        theme="light"
-        variant="solo"
-        item-props
-        clearable
-      ></v-autocomplete>
+      <v-form @submit.prevent="handleSearch" class="d-flex align-center">
+        <v-text-field
+          v-model="searchKeyword"
+          label="Find costume you like to borrow"
+          variant="solo"
+          clearable
+          style="max-width: 700px"
+          class="mx-auto rounded-lg"
+        >
+          <template v-slot:append-inner>
+            <v-btn
+              @click.stop="handleSearch"
+              color="primary"
+              icon
+              density="comfortable"
+            >
+              <v-icon>mdi-magnify</v-icon>
+            </v-btn>
+          </template>
+        </v-text-field>
+      </v-form>
     </v-col>
   </v-row>
 
@@ -128,6 +136,7 @@ export default {
   name: "NotificationStatusAdmin",
   setup() {
     const transactions = ref([]);
+    const searchKeyword = ref("");
 
     // Approve transaction method
     const approveTransaction = async (transact_id) => {
@@ -228,10 +237,10 @@ export default {
     };
 
     //admin
-    const fetchTransactions = async () => {
+    const fetchTransactions = async (keyword) => {
       // Fetch data from the transaction_with_due_date table
       const { data, error } = await supabase
-        .from("transaction_due_date")
+        .from("transaction_with_due_date")
         .select(
           `
       transact_id,
@@ -242,8 +251,12 @@ export default {
       due_date,
       first_name,
       last_name,
-      item_name
+      item_name,
+      transact_status
     `
+        )
+        .or(
+          `item_name.ilike.%${keyword}%,transact_status.ilike.%${keyword}%,first_name.ilike.%${keyword}%,last_name.ilike.%${keyword}%`
         )
 
         .order("created_at", { ascending: false });
@@ -295,6 +308,13 @@ export default {
           settled: settledTransaction ? settledTransaction.settled : false, // Add settled status from the second query
         };
       });
+    };
+
+    const handleSearch = (e) => {
+      e.preventDefault(); // Prevent the form from submitting normally
+      if (searchKeyword.value.trim() !== "") {
+        fetchTransactions(searchKeyword.value); // Fetch transactions based on the entered keyword
+      }
     };
 
     const returnItem = async (transactId) => {
@@ -372,14 +392,17 @@ export default {
       }
     };
 
-    onMounted(fetchTransactions);
+    onMounted(async () => {
+      await fetchTransactions(""); // Initial fetch with an empty keyword
+    });
 
     return {
       transactions,
-
+      handleSearch,
       disapproveTransaction,
       approveTransaction,
       returnItem,
+      searchKeyword,
     };
   },
 };

@@ -1,31 +1,29 @@
 <template>
   <v-app>
     <!-- Transparent Navbar -->
-    <v-app-bar app flat color="#08544f" class="fixed-top" style="top: 0; padding-top: 0;">
-      <v-container class="d-flex justify-space-between align-center">
-        <v-btn class="text-white" text @click="scrollToTop">
-          <h3>Culture Closet</h3>
-        </v-btn>
-        <div class="d-flex">
-          <v-btn class="text-white" text large @click="scrollToSection('get-started')">Log In</v-btn>
-          <v-btn class="text-white" outlined large @click="scrollToSection('explore-collections')">Register</v-btn>
-        </div>
-      </v-container>
-    </v-app-bar>
 
     <!-- Full Screen Landing Section -->
-    <v-container fluid class="py-4 px-50 pt-20">
+    <v-container fluid class="py-4 px-50 pt-10">
       <v-row>
         <!-- First Column: Text and Button -->
-        <v-col class="d-flex flex-column justify-center align-center">
+        <v-col
+          cols="12"
+          sm="6"
+          class="d-flex flex-column justify-center align-center"
+        >
           <v-container class="text-sm-start text-center ml-0 ml-lg-16">
-            <h1 class="display-1 text-white text-h4 text-md-h3 text-lg-h2 font-weight-bold">
+            <h1
+              class="display-1 text-white text-h4 text-md-h3 text-lg-h2 font-weight-bold"
+            >
               Culture Closet
             </h1>
             <p class="subheading mb-4 mt-1 text-white">
-              Discover the rich culture, traditional dances, and stories of our heritage.
+              Discover the rich culture, traditional dances, and stories of our
+              heritage.
             </p>
-            <v-container class="d-flex flex-column flex-sm-row justify-center justify-sm-start">
+            <v-container
+              class="d-flex flex-column flex-sm-row justify-center justify-sm-start"
+            >
               <v-btn
                 color="primary"
                 class="text-uppercase mb-3 mb-sm-0 mx-sm-1"
@@ -47,8 +45,8 @@
         </v-col>
 
         <!-- Second Column: Image -->
-        <v-col cols="12" sm="6" class="image-column">
-          <v-responsive class="image-container ms-5 mt-10">
+        <v-col cols="12" sm="6" class="image-column pt-0 mt-0">
+          <v-responsive class="image-container ms-5 mt-0">
             <v-img
               src="../assets/culture.gif"
               alt="Culture Image"
@@ -63,12 +61,18 @@
     </v-container>
 
     <!-- Bottom Screen Section (Target Section) -->
-    <v-container fluid id="explore-collections" class="pa-12" style="min-height: 100vh;">
+    <v-container
+      fluid
+      id="explore-collections"
+      class="pa-12"
+      style="min-height: 100vh"
+    >
       <v-row>
         <v-col cols="12" class="text-center text-black">
           <h2 class="display-2">Explore Our Collections</h2>
           <p class="subheading">
-            Dive into the world of traditional costumes, dances, and stories that reflect the richness of our heritage.
+            Dive into the world of traditional costumes, dances, and stories
+            that reflect the richness of our heritage.
           </p>
         </v-col>
       </v-row>
@@ -153,7 +157,12 @@
 
     <!-- Modal for Image Pop-up -->
     <v-dialog v-model="dialog" max-width="800px">
-      <v-img :src="selectedImage" alt="Selected Image" max-height="600px" contain />
+      <v-img
+        :src="selectedImage"
+        alt="Selected Image"
+        max-height="600px"
+        contain
+      />
     </v-dialog>
 
     <!-- Authentication Form Section -->
@@ -170,8 +179,8 @@ export default {
   name: "LandingPage",
   data() {
     return {
-      dialog: false,          // Controls the modal visibility
-      selectedImage: '',      // Stores the image source to display in modal
+      dialog: false, // Controls the modal visibility
+      selectedImage: "", // Stores the image source to display in modal
       fullText: "Culture Closet!",
       typewriterText: "",
       typeSpeed: 100, // Speed of typing
@@ -215,7 +224,7 @@ export default {
     },
     openImageModal(imageSrc) {
       this.selectedImage = imageSrc;
-      this.dialog = true;  // Show the modal
+      this.dialog = true; // Show the modal
     },
   },
   components: {
@@ -263,7 +272,7 @@ export default {
 }
 
 .image-card:hover .v-img {
-  transform: scale(1.1);  /* Slightly scale up the image */
+  transform: scale(1.1); /* Slightly scale up the image */
   transition: transform 0.3s ease;
 }
 
