@@ -679,7 +679,7 @@ export default {
     // Fetch total quantity
     const getTotalQuantityPerItem = async () => {
       const { data, error } = await supabase.rpc(
-        "get_total_quantity_per_item",
+        "get_total_quantity_per_item",  //function
         { item_id_param: props.id }
       );
       if (error) console.error(error);

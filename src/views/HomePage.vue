@@ -43,6 +43,7 @@
 </template>
 
 <script>
+
 export default {
   name: "HomePage",
 
@@ -50,6 +51,7 @@ export default {
     exploreCollections() {
       this.$router.push({ name: "CultureInventory" }); // Redirect to CultureInventory page
     },
+ 
   },
 };
 </script>

@@ -80,7 +80,6 @@
                       required
                       chips
                       show-size
-                      
                       density="compact"
                     ></v-file-input>
                   </v-col>
@@ -366,138 +365,138 @@ export default {
     // Function to add the item to the inventory and item_sizes table
     // Function to add the item to the inventory and item_sizes table
     const addItem = async () => {
-  try {
-    // Validate image file input
-    if (!formData.image) {
-      alertMessage.value = "Please upload an image.";
-      alertType.value = "error";
-      return;
-    }
+      try {
+        // Validate image file input
+        if (!formData.image) {
+          alertMessage.value = "Please upload an image.";
+          alertType.value = "error";
+          return;
+        }
 
-    // Upload image to Supabase storage
-    const { data: imageData, error: imageUploadError } = await supabase.storage
-      .from("items")
-      .upload(`public/${formData.image.name}`, formData.image, {
-        cacheControl: "3600",
-        upsert: false,
-      });
+        // Upload image to Supabase storage
+        const { data: imageData, error: imageUploadError } =
+          await supabase.storage
+            .from("items")
+            .upload(`public/${formData.image.name}`, formData.image, {
+              cacheControl: "3600",
+              upsert: false,
+            });
 
-    if (imageUploadError) {
-      console.error("Error uploading image:", imageUploadError);
-      alertMessage.value = "Error uploading image. Please try again.";
-      alertType.value = "error";
-      return;
-    }
+        if (imageUploadError) {
+          console.error("Error uploading image:", imageUploadError);
+          alertMessage.value = "Error uploading image. Please try again.";
+          alertType.value = "error";
+          return;
+        }
 
-    // Insert the costume data into the inventory table
-    const { data: inventoryData, error: inventoryError } = await supabase
-      .from("inventory")
-      .insert([
-        {
-          name: formData.costumeName,
-          category: formData.category,
-          tribe: formData.tribes,
-          details: formData.briefDetails,
-          specifications: formData.specifications,
-          image_path: imageData.path, // Store image path in the database
-        },
-      ])
-      .select();
+        // Insert the costume data into the inventory table
+        const { data: inventoryData, error: inventoryError } = await supabase
+          .from("inventory")
+          .insert([
+            {
+              name: formData.costumeName,
+              category: formData.category,
+              tribe: formData.tribes,
+              details: formData.briefDetails,
+              specifications: formData.specifications,
+              image_path: imageData.path, // Store image path in the database
+            },
+          ])
+          .select();
 
-    if (inventoryError) {
-      console.error("Error inserting into inventory:", inventoryError);
-      alertMessage.value =
-        "Error inserting item into inventory. Please try again.";
-      alertType.value = "error";
-      return;
-    }
+        if (inventoryError) {
+          console.error("Error inserting into inventory:", inventoryError);
+          alertMessage.value =
+            "Error inserting item into inventory. Please try again.";
+          alertType.value = "error";
+          return;
+        }
 
-    // Check if inventoryData has data
-    if (!inventoryData || inventoryData.length === 0) {
-      console.error("No inventory data returned.");
-      alertMessage.value = "No inventory data returned. Please try again.";
-      alertType.value = "error";
-      return;
-    }
+        // Check if inventoryData has data
+        if (!inventoryData || inventoryData.length === 0) {
+          console.error("No inventory data returned.");
+          alertMessage.value = "No inventory data returned. Please try again.";
+          alertType.value = "error";
+          return;
+        }
 
-    // Use inventoryData[0].id to get the id of the inserted item
-    const itemId = inventoryData[0].id;
+        // Use inventoryData[0].id to get the id of the inserted item
+        const itemId = inventoryData[0].id;
 
-    // Prepare item sizes data (include sizes with quantity 0)
-    const sizeEntries = [
-      { size: "S", quantity: parseInt(formData.smallAvailability) || 0 },
-      { size: "M", quantity: parseInt(formData.mediumAvailability) || 0 },
-      { size: "L", quantity: parseInt(formData.largeAvailability) || 0 },
-      {
-        size: "XL",
-        quantity: parseInt(formData.extraLargeAvailability) || 0,
-      },
-    ].map((entry) => ({
-      item_id: itemId,
-      size: entry.size, // Directly use the size label (S, M, L, XL)
-      quantity: entry.quantity,
-    }));
+        // Prepare item sizes data (include sizes with quantity 0)
+        const sizeEntries = [
+          { size: "S", quantity: parseInt(formData.smallAvailability) || 0 },
+          { size: "M", quantity: parseInt(formData.mediumAvailability) || 0 },
+          { size: "L", quantity: parseInt(formData.largeAvailability) || 0 },
+          {
+            size: "XL",
+            quantity: parseInt(formData.extraLargeAvailability) || 0,
+          },
+        ].map((entry) => ({
+          item_id: itemId,
+          size: entry.size, // Directly use the size label (S, M, L, XL)
+          quantity: entry.quantity,
+        }));
 
-    // Insert sizes into item_sizes table
-    const { error: upsertError } = await supabase
-      .from("item_sizes")
-      .insert(sizeEntries);
+        // Insert sizes into item_sizes table
+        const { error: upsertError } = await supabase
+          .from("item_sizes")
+          .insert(sizeEntries);
 
-    if (upsertError) {
-      console.error("Error inserting item sizes:", upsertError);
-      alertMessage.value = "Error adding item sizes. Please try again.";
-      alertType.value = "error";
-      return;
-    }
+        if (upsertError) {
+          console.error("Error inserting item sizes:", upsertError);
+          alertMessage.value = "Error adding item sizes. Please try again.";
+          alertType.value = "error";
+          return;
+        }
 
-    // Success message
-    alertMessage.value = "Item successfully added!";
-    alertType.value = "success";
+        // Success message
+        alertMessage.value = "Item successfully added!";
+        alertType.value = "success";
 
-    // Reset form data
-    Object.assign(formData, {
-      costumeName: "",
-      tribes: "",
-      category: "",
-      smallAvailability: 0,
-      mediumAvailability: 0,
-      largeAvailability: 0,
-      extraLargeAvailability: 0,
-      briefDetails: "",
-      specifications: "",
-      image: null, // Reset image field
-    });
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    alertMessage.value = "An unexpected error occurred. Please try again.";
-    alertType.value = "error";
-  }
-};
-
+        // Reset form data
+        Object.assign(formData, {
+          costumeName: "",
+          tribes: "",
+          category: "",
+          smallAvailability: 0,
+          mediumAvailability: 0,
+          largeAvailability: 0,
+          extraLargeAvailability: 0,
+          briefDetails: "",
+          specifications: "",
+          image: null, // Reset image field
+        });
+      } catch (error) {
+        console.error("Unexpected error:", error);
+        alertMessage.value = "An unexpected error occurred. Please try again.";
+        alertType.value = "error";
+      }
+    };
 
     // Function to fetch data with optional search keyword
     const getDatas = async (keyword = "") => {
-  const baseImageUrl = "https://mqablnufetjbxivjsycu.supabase.co/storage/v1/object/public/items/";
-  
-  let { data: items, error } = await supabase
-    .from("inventory")
-    .select("*")
-    .or(`name.ilike.%${keyword}%,tribe.ilike.%${keyword}%`)
-    .order("name", { ascending: true });
+      const baseImageUrl =
+        "https://mqablnufetjbxivjsycu.supabase.co/storage/v1/object/public/items/";
 
-  if (error) {
-    console.error("Error fetching inventory:", error.message);
-  } else {
-    // Add full image URL to each item
-    items = items.map(item => ({
-      ...item,
-      image: item.image_path ? `${baseImageUrl}${item.image_path}` : null
-    }));
-    
-    inventory.value = items;
-  }
-};
+      let { data: items, error } = await supabase
+        .from("inventory")
+        .select("*")
+        .or(`name.ilike.%${keyword}%,tribe.ilike.%${keyword}%`)
+        .order("name", { ascending: true });
 
+      if (error) {
+        console.error("Error fetching inventory:", error.message);
+      } else {
+        // Add full image URL to each item
+        items = items.map((item) => ({
+          ...item,
+          image: item.image_path ? `${baseImageUrl}${item.image_path}` : null,
+        }));
+
+        inventory.value = items;
+      }
+    };
 
     // Search handler
     const handleSearch = (e) => {
@@ -517,28 +516,54 @@ export default {
       return favorites.value.has(itemId);
     };
 
-    // Function to toggle favorite status (add or remove from favorites)
     const addToFavorites = async (itemId) => {
       try {
         const user_id = localStorage.getItem("userId");
 
-        // Step 1: Get the logged-in user's profile
-        const { data: userProfile, error: profileError } = await supabase
+        let uni_id = null;
+
+        // Step 1: Check the profiles table for email-based login
+        const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("uni_id")
           .eq("auth_id", user_id)
           .single();
 
-        if (profileError) {
-          console.error("Error fetching user profile:", profileError);
+        if (profileData) {
+          // User is found in the profiles table (email login)
+          uni_id = profileData.uni_id;
+        } else if (profileError) {
+          console.warn("User not found in profiles table:", profileError);
+        }
+
+        // Step 2: Check the users table for Google login (if not found in profiles)
+        if (!uni_id) {
+          const { data: userData, error: userError } = await supabase
+            .from("users")
+            .select("email") // Adjust this field based on your users table schema
+            .eq("auth_id", user_id)
+            .single();
+
+          if (userData) {
+            // User is found in the users table (Google login)
+            uni_id = userData.email; // Assuming `email` is the unique identifier for Google accounts
+          } else if (userError) {
+            console.error("Error finding user in users table:", userError);
+            return;
+          }
+        }
+
+        // If uni_id is still not found, exit
+        if (!uni_id) {
+          console.error("User ID not found in either table.");
           return;
         }
 
-        // Step 2: Check if the item is already in the favorites table
+        // Step 3: Check if the item is already in the favorites table
         const { data: favoriteItems, error: favoriteError } = await supabase
           .from("favorites")
           .select("*")
-          .eq("user_id", userProfile.uni_id)
+          .or(`user_id.eq.${uni_id},acc_id.eq.${uni_id}`) // Use OR to check both user_id and acc_id
           .eq("item_id", itemId);
 
         if (favoriteError) {
@@ -546,13 +571,14 @@ export default {
           return;
         }
 
-        // Step 3: If item is in favorites, remove it; otherwise, add it
+        // Step 4: If item is in favorites, remove it; otherwise, add it
         if (favoriteItems.length > 0) {
           // Item is already in favorites, so remove it
           const { data: removedData, error: removeError } = await supabase
             .from("favorites")
             .delete()
-            .match({ user_id: userProfile.uni_id, item_id: itemId });
+            .or(`user_id.eq.${uni_id},acc_id.eq.${uni_id}`) // Match either user_id or acc_id
+            .eq("item_id", itemId);
 
           if (removeError) {
             console.error("Error removing item from favorites:", removeError);
@@ -561,7 +587,6 @@ export default {
               "Item removed from favorites successfully:",
               removedData
             );
-            // Update local state
             favorites.value.delete(itemId);
             updateLocalStorage();
             snackbarMessage.value = "Unsaved from favorites";
@@ -569,15 +594,18 @@ export default {
           }
         } else {
           // Item is not in favorites, so add it
+          const insertData = uni_id.includes("@") // Check if uni_id is an email
+            ? { acc_id: uni_id, item_id: itemId } // For email, use user_id
+            : { user_id: uni_id, item_id: itemId }; // For Google, use acc_id
+
           const { data: addedData, error: addError } = await supabase
             .from("favorites")
-            .insert([{ user_id: userProfile.uni_id, item_id: itemId }]);
+            .insert([insertData]);
 
           if (addError) {
             console.error("Error adding item to favorites:", addError);
           } else {
             console.log("Item added to favorites successfully:", addedData);
-            // Update local state
             favorites.value.add(itemId);
             updateLocalStorage();
             snackbarMessage.value = "Saved to favorites";
@@ -593,32 +621,59 @@ export default {
     const fetchFavorites = async () => {
       try {
         const user_id = localStorage.getItem("userId");
-        const { data: userProfile, error: profileError } = await supabase
+
+        let uni_id;
+
+        // Step 1: Check the profiles table
+        const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("uni_id")
           .eq("auth_id", user_id)
           .single();
 
-        if (profileError) {
-          console.error("Error fetching user profile:", profileError);
+        if (profileData) {
+          // User is found in the profiles table
+          uni_id = profileData.uni_id;
+        } else if (profileError) {
+          console.warn("User not found in profiles table:", profileError);
+
+          // Step 2: If not found in profiles, check the users table
+          const { data: userData, error: userError } = await supabase
+            .from("users")
+            .select("email") // Replace "id" with the appropriate unique identifier in your users table
+            .eq("auth_id", user_id)
+            .single();
+
+          if (userData) {
+            // User is found in the users table
+            uni_id = userData.email;
+          } else if (userError) {
+            console.error("Error finding user in users table:", userError);
+            return;
+          }
+        }
+
+        if (!uni_id) {
+          console.error("User ID not found in either table.");
           return;
         }
 
+        // Step 3: Fetch the user's favorite items using uni_id
         const { data: favoriteItems, error: favoriteError } = await supabase
           .from("favorites")
           .select("item_id")
-          .eq("user_id", userProfile.uni_id);
+          .or(`user_id.eq.${uni_id},acc_id.eq.${uni_id}`); // This checks both user_id and acc_id
 
         if (favoriteError) {
           console.error("Error fetching favorite items:", favoriteError);
           return;
         }
 
-        // Load favorite items into the reactive state
+        // Step 4: Load favorite items into the reactive state
         favorites.value = new Set(favoriteItems.map((item) => item.item_id));
         localStorage.setItem("favorites", JSON.stringify([...favorites.value]));
       } catch (err) {
-        console.error("Error fetching favorites:", err);
+        console.error("Unexpected error fetching favorites:", err);
       }
     };
 

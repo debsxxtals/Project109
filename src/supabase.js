@@ -6,7 +6,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function loginWithGoogle() {
   try {
-    const { user, error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
     });
 
@@ -14,24 +14,40 @@ export async function loginWithGoogle() {
       throw error;
     }
 
-    // Store user data into your database (if needed)
-    const { data, error: dbError } = await supabase
-      .from("users") // your users table
-      .upsert([
-        {
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata.full_name,
-        },
-      ]);
+    console.log("Redirecting to Google login...");
 
-    if (dbError) {
-      throw dbError;
-    }
+    // After redirect, fetch session details
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        localStorage.setItem("access_token", session.access_token);
+        localStorage.setItem("refresh_token", session.refresh_token);
 
-    console.log("User data saved", data);
+        const google = session.user;
+        console.log("Session onAuthStateChange:", session);
+        localStorage.setItem("userId", google.id);
+
+        const { data: dbData, error: dbError } = await supabase
+          .from("users")
+          .upsert([
+            {
+              auth_id: google.id,
+              email: google.email,
+              name: google.user_metadata.full_name,
+              avatar: google.user_metadata.avatar_url,
+            },
+            { onConflict: "auth_id" }, // Specify the conflict column
+          ]);
+
+        if (dbError) {
+          console.error("Error saving user data to database:", dbError.message);
+        } else {
+          console.log("User data saved:", dbData);
+          console.log("Session onAuthStateChange:", session);
+        }
+      }
+    });
   } catch (error) {
-    console.error("Error during Google login", error.message);
+    console.error("Error during Google login:", error.message);
   }
 }
 

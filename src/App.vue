@@ -7,13 +7,18 @@
 
     <v-navigation-drawer v-if="!isLandingPage" v-model="drawer" app>
       <v-list-item class="d-flex flex-column align-center my-5">
-        <v-avatar image="/images/default.jpg" size="50" border="sm"></v-avatar>
-        <v-list-item-title class="text-h6 text-center">{{
-          firstName + " " + lastName
-        }}</v-list-item-title>
-        <v-list-item-subtitle class="text-center">{{
-          userEmail
-        }}</v-list-item-subtitle>
+        <!-- Bind the v-avatar image to profileImage variable -->
+        <v-avatar
+          :image="profileImage || '/images/default.jpg'"
+          size="50"
+          border="sm"
+        ></v-avatar>
+        <v-list-item-title class="text-h6 text-center">
+          {{ firstName + " " + lastName }}
+        </v-list-item-title>
+        <v-list-item-subtitle class="text-center">
+          {{ userEmail }}
+        </v-list-item-subtitle>
       </v-list-item>
 
       <v-divider class="mb-10"></v-divider>
@@ -71,13 +76,16 @@ import { supabase } from "./supabase";
 const currentComponent = ref(null);
 const drawer = ref(false);
 const router = useRouter();
+
+// Reactive properties
 const firstName = ref("");
 const lastName = ref("");
+const profileImage = ref(""); // Define profileImage here
 const userEmail = ref("");
 
 onMounted(() => {
   getUserData();
-  refreshSession();
+  //refreshSession();
 });
 
 const icons = ref([
@@ -95,16 +103,16 @@ const menuItems = [
   { title: "Logout", action: "logout" },
 ];
 
-async function refreshSession() {
-  const { data, error } = await supabase.auth.refreshSession();
-  if (data) {
-    console.log("Session refreshed:", data);
-    localStorage.setItem("access_token", data.access_token); // Store the new access token
-    localStorage.setItem("refresh_token", data.refresh_token); // Store the refresh token
-  } else {
-    console.log("Error refreshing session:", error);
-  }
-}
+// async function refreshSession() {
+//   const { data, error } = await supabase.auth.refreshSession();
+//   if (data) {
+//     console.log("Session refreshed:", data);
+//     localStorage.setItem("access_token", data.access_token); // Store the new access token
+//     localStorage.setItem("refresh_token", data.refresh_token); // Store the refresh token
+//   } else {
+//     console.log("Error refreshing session:", error);
+//   }
+// }
 
 async function getUserData() {
   const { data: user, error: userError } = await supabase.auth.getUser();
@@ -115,33 +123,77 @@ async function getUserData() {
   }
 
   if (user) {
+    // Get user email and ID
     userEmail.value = user.email;
     const userId = localStorage.getItem("userId") || user.id;
 
     if (userId) {
+      // Check in profiles table for email-based logins
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("first_name, last_name, role")
+        .select("first_name, last_name, image_path, email")
         .eq("auth_id", userId)
         .single();
 
-      if (profileError) {
+      if (profiles) {
+        // Set first name, last name, and profile image
+        firstName.value = profiles.first_name;
+        lastName.value = profiles.last_name;
+        userEmail.value = profiles.email;
+
+        // Fetch image from storage bucket
+        if (profiles.image_path) {
+          const { data: publicUrlData } = supabase.storage
+            .from("profiles") // Replace with your bucket name
+            .getPublicUrl(profiles.image_path);
+
+          profileImage.value = publicUrlData.publicUrl;
+        }
+
+        // Determine the component only for email-based login (has role)
+        const userRole = profiles.role || localStorage.getItem("user_role");
+        if (userRole) {
+          localStorage.setItem("user_role", userRole);
+          currentComponent.value =
+            userRole === "admin"
+              ? NotificationStatusAdmin
+              : NotificationStatusMember;
+        }
+      } else if (profileError) {
         console.log("Error fetching profile:", profileError);
         firstName.value = "Default";
         lastName.value = "User";
-      } else {
-        firstName.value = profiles.first_name;
-        lastName.value = profiles.last_name;
+        profileImage.value = "/images/default.jpg"; // Fallback
+      }
 
-        // Store user role in localStorage
-        localStorage.setItem("user_role", profiles.role);
+      // Check in users table for Google-based logins
+      const { data: googleUser, error: googleError } = await supabase
+        .from("users")
+        .select("name, avatar, email")
+        .eq("auth_id", userId)
+        .single();
 
-        // Set the currentComponent based on the role
-        if (profiles.role === "admin") {
-          currentComponent.value = NotificationStatusAdmin;
+      if (googleUser) {
+        // Set full name from Google account
+        firstName.value = googleUser.name;
+        lastName.value = "";
+        userEmail.value = googleUser.email; // No last name for Google users
+
+        // Check avatar and handle bucket-stored URLs
+        if (googleUser.avatar.startsWith("http")) {
+          profileImage.value = googleUser.avatar;
         } else {
-          currentComponent.value = NotificationStatusMember;
+          const { data: avatarUrlData } = supabase.storage
+            .from("avatars") // Replace with your bucket name
+            .getPublicUrl(googleUser.avatar);
+
+          profileImage.value = avatarUrlData.publicUrl;
         }
+
+        // No role-based component for Google users
+        currentComponent.value = NotificationStatusMember; // Default component
+      } else if (googleError) {
+        console.log("Error fetching Google user:", googleError);
       }
     }
   }
@@ -189,10 +241,19 @@ const handleMenuClick = async (item) => {
 const logout = async () => {
   console.log("Logging out...");
   try {
-    await supabase.auth.signOut();
+    // Clear all session-related storage
     localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    sessionStorage.clear();
+    localStorage.clear();
+
+    // Sign out from Supabase
+    await supabase.auth.signOut();
+
     console.log("User logged out");
-    router.push("/");
+    router.push("/").catch(() => {
+      window.location.href = "/";
+    });
   } catch (error) {
     console.error("Error logging out", error.message);
   }

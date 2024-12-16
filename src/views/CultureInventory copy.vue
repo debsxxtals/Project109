@@ -395,77 +395,96 @@ export default {
       return favorites.value.has(itemId);
     };
 
-    // Function to toggle favorite status (add or remove from favorites)
     const addToFavorites = async (itemId) => {
-      try {
-        const user_id = localStorage.getItem("userId");
+  try {
+    const user_id = localStorage.getItem("userId");
 
-        // Step 1: Get the logged-in user's profile
-        const { data: userProfile, error: profileError } = await supabase
-          .from("profiles")
-          .select("uni_id")
-          .eq("auth_id", user_id)
-          .single();
+    // Step 1: Check the profiles table for the user
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("uni_id")
+      .eq("auth_id", user_id)
+      .single();
 
-        if (profileError) {
-          console.error("Error fetching user profile:", profileError);
-          return;
-        }
+    let uni_id;
 
-        // Step 2: Check if the item is already in the favorites table
-        const { data: favoriteItems, error: favoriteError } = await supabase
-          .from("favorites")
-          .select("*")
-          .eq("user_id", userProfile.uni_id)
-          .eq("item_id", itemId);
+    if (profileData) {
+      // User is found in the profiles table
+      uni_id = profileData.uni_id;
+    } else if (profileError) {
+      console.warn("User not found in profiles table:", profileError);
 
-        if (favoriteError) {
-          console.error("Error checking favorite items:", favoriteError);
-          return;
-        }
+      // Step 2: Check the users table for the user
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("id") // Adjust this field based on your users table schema
+        .eq("auth_id", user_id)
+        .single();
 
-        // Step 3: If item is in favorites, remove it; otherwise, add it
-        if (favoriteItems.length > 0) {
-          // Item is already in favorites, so remove it
-          const { data: removedData, error: removeError } = await supabase
-            .from("favorites")
-            .delete()
-            .match({ user_id: userProfile.uni_id, item_id: itemId });
-
-          if (removeError) {
-            console.error("Error removing item from favorites:", removeError);
-          } else {
-            console.log(
-              "Item removed from favorites successfully:",
-              removedData
-            );
-            // Update local state
-            favorites.value.delete(itemId);
-            updateLocalStorage();
-            snackbarMessage.value = "Unsaved from favorites";
-            snackbar.value = true;
-          }
-        } else {
-          // Item is not in favorites, so add it
-          const { data: addedData, error: addError } = await supabase
-            .from("favorites")
-            .insert([{ user_id: userProfile.uni_id, item_id: itemId }]);
-
-          if (addError) {
-            console.error("Error adding item to favorites:", addError);
-          } else {
-            console.log("Item added to favorites successfully:", addedData);
-            // Update local state
-            favorites.value.add(itemId);
-            updateLocalStorage();
-            snackbarMessage.value = "Saved to favorites";
-            snackbar.value = true;
-          }
-        }
-      } catch (err) {
-        console.error("Unexpected error:", err);
+      if (userData) {
+        // User is found in the users table
+        uni_id = userData.id; // Replace `id` with the actual unique identifier in the users table
+      } else if (userError) {
+        console.error("Error finding user in users table:", userError);
+        return;
       }
-    };
+    }
+
+    if (!uni_id) {
+      console.error("User ID not found in either table.");
+      return;
+    }
+
+    // Step 3: Check if the item is already in the favorites table
+    const { data: favoriteItems, error: favoriteError } = await supabase
+      .from("favorites")
+      .select("*")
+      .eq("user_id", uni_id)
+      .eq("item_id", itemId);
+
+    if (favoriteError) {
+      console.error("Error checking favorite items:", favoriteError);
+      return;
+    }
+
+    // Step 4: If item is in favorites, remove it; otherwise, add it
+    if (favoriteItems.length > 0) {
+      // Item is already in favorites, so remove it
+      const { data: removedData, error: removeError } = await supabase
+        .from("favorites")
+        .delete()
+        .match({ user_id: uni_id, item_id: itemId });
+
+      if (removeError) {
+        console.error("Error removing item from favorites:", removeError);
+      } else {
+        console.log("Item removed from favorites successfully:", removedData);
+        favorites.value.delete(itemId);
+        updateLocalStorage();
+        snackbarMessage.value = "Unsaved from favorites";
+        snackbar.value = true;
+      }
+    } else {
+      // Item is not in favorites, so add it
+      const { data: addedData, error: addError } = await supabase
+        .from("favorites")
+        .insert([{ user_id: uni_id, item_id: itemId }]);
+
+      if (addError) {
+        console.error("Error adding item to favorites:", addError);
+      } else {
+        console.log("Item added to favorites successfully:", addedData);
+        favorites.value.add(itemId);
+        updateLocalStorage();
+        snackbarMessage.value = "Saved to favorites";
+        snackbar.value = true;
+      }
+    }
+  } catch (err) {
+    console.error("Unexpected error:", err);
+  }
+};
+
 
     // Function to fetch user's favorites on login
     const fetchFavorites = async () => {

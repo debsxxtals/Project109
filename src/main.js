@@ -8,7 +8,7 @@ loadFonts();
 
 //import supabase from "@/supabase.js";
 
-//Listen for authentication state changes
+// Listen for authentication state changes
 // supabase.auth.onAuthStateChange((event, session) => {
 //   if (session) {
 //     console.log('Session onAuthStateChange:', session);
